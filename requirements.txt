@@ -1,0 +1,5 @@
+python-mpd2
+gpiozero
+rpi-ws281x
+pyserial
+lgpio

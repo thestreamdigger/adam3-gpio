@@ -1,0 +1,26 @@
+[Unit]
+Description=ADAM3-GPIO (with MPD check)
+After=mpd.service network.target network-online.target dev-ttyAMA0.device
+Wants=network-online.target mpd.service dev-ttyAMA0.device
+Requires=mpd.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/home/pi/adam3-gpio
+Environment=PYTHONPATH=/home/pi/adam3-gpio
+Environment=PATH=/home/pi/adam3-gpio/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ExecStartPre=/bin/sleep 10
+ExecStartPre=/bin/bash -c 'until [ -e /dev/ttyAMA0 ]; do sleep 1; done'
+ExecStart=/home/pi/adam3-gpio/venv/bin/python3 /home/pi/adam3-gpio/src/main.py
+Restart=on-failure
+RestartSec=10
+StartLimitInterval=60
+StartLimitBurst=3
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=adam3-gpio
+
+[Install]
+WantedBy=multi-user.target 

@@ -1,0 +1,83 @@
+{
+  "mpd": {
+    "host": "localhost",
+    "port": 6600
+  },
+  "gpio": {
+    "button": 20,
+    "display": {
+      "serial_port": "/dev/ttyAMA0",
+      "baudrate": 19200
+    },
+    "status_leds": {
+      "pin": 21,
+      "count": 4,
+      "brightness": 16,
+      "order": "GRB"
+    }
+  },
+  "timing": {
+    "command_cooldown": 0.5,
+    "long_press_time": 2,
+    "update_interval": 0.5,
+    "volume_update_interval": 0.1,
+    "volume_display_duration": 3
+  },
+  "display": {
+    "brightness": 8,
+    "brightness_levels": {
+      "led": [
+        4,
+        8,
+        16
+      ],
+      "display": [
+        3,
+        6,
+        8
+      ]
+    },
+    "mode": "elapsed",
+    "pause_mode": {
+      "blink_interval": 1
+    },
+    "play_mode": {
+      "track_number": {
+        "show_number": true,
+        "display_time": 2
+      }
+    },
+    "stop_mode": {
+      "stop_symbol_time": 2,
+      "track_total_time": 2,
+      "playlist_time": 2
+    }
+  },
+  "effects": {
+    "enabled": true,
+    "events": {
+      "on_track_change": {
+        "effect": "flash_active",
+        "repeat_count": 2,
+        "on_duration": 0.20,
+        "off_duration": 0.10,
+        "r": 0, "g": 255, "b": 0
+      }
+    }
+  },
+  "paths": {
+    "roulette": "scripts/roulette.sh"
+  },
+  "updates": {
+    "trigger": {
+      "file": ".update_trigger",
+      "check_interval": 0.5,
+      "debounce_time": 0.1
+    }
+  },
+  "logging": {
+    "enable": true,
+    "level": "INFO",
+    "format": "[{level}] {message}"
+  }
+}
