@@ -82,18 +82,18 @@ class TM1652:
                 if not self.ser or not self.ser.is_open:
                     if not self._connect_serial():
                         return
-                
+
                 self.ser.write(data)
                 self.ser.flush()
-                time.sleep(0.006)
+                time.sleep(0.002)
                 return
-                
+
             except Exception as e:
                 log.error(f"Failed to write to serial port (attempt {attempt + 1}): {e}")
-                
+
                 if attempt < max_attempts - 1:
                     self._connect_serial()
-                    time.sleep(0.1)
+                    time.sleep(0.05)
                 else:
                     log.error("Failed to write after all attempts")
 
@@ -239,12 +239,3 @@ class TM1652:
             self.ser = None
         except Exception as e:
             log.error(f"Display cleanup failed: {e}")
-
-    def display_clock_with_blink(self, hour: int, minute: int, second: int) -> None:
-        try:
-            colon_visible = (second % 2 == 0)
-            self.show_time(hour, minute, colon_visible)
-        except Exception as e:
-            log.error(f"Display clock with blink failed: {e}")
-
-    

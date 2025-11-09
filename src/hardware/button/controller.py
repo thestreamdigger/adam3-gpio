@@ -6,10 +6,9 @@ import signal
 from gpiozero import Button
 from src.core.config import Config
 from src.utils.logger import Logger
+from src.utils.paths import PROJECT_ROOT
 
 log = Logger()
-
-PROJECT_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
 
 class ButtonController:
     def __init__(self) -> None:

@@ -1,6 +1,5 @@
 from mpd import MPDClient as BaseMPDClient
 import time
-import subprocess
 import socket
 from typing import Optional, Dict, Any
 from src.utils.logger import Logger
@@ -36,7 +35,6 @@ class MPDClient:
         try:
             if self.connect():
                 status = self._client.status()
-                log.debug(f"MPD status: {status}")
                 return status
         except Exception:
             self._connected = False
@@ -47,7 +45,6 @@ class MPDClient:
         try:
             if self.connect():
                 song = self._client.currentsong()
-                log.debug(f"Current song: {song}")
                 return song
         except Exception:
             self._connected = False
@@ -56,30 +53,23 @@ class MPDClient:
 
     def wait_for_mpd(self, max_attempts: int = 30, wait_interval: int = 2) -> bool:
         log.wait("Waiting for MPD...")
-        
+
         for attempt in range(max_attempts):
             try:
-                result = subprocess.run(['nc', '-z', '-w1', self.host, str(self.port)], 
-                                      capture_output=True, timeout=3)
-                if result.returncode == 0:
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                sock.settimeout(1)
+                if sock.connect_ex((self.host, self.port)) == 0:
+                    sock.close()
                     log.ok("MPD ready")
                     return True
-            except (subprocess.TimeoutExpired, FileNotFoundError):
-                try:
-                    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    sock.settimeout(1)
-                    if sock.connect_ex((self.host, self.port)) == 0:
-                        sock.close()
-                        log.ok("MPD ready")
-                        return True
-                    sock.close()
-                except Exception:
-                    pass
-            
+                sock.close()
+            except Exception:
+                pass
+
             if attempt < max_attempts - 1:
                 log.debug(f"MPD not ready, attempt {attempt + 1}/{max_attempts}, waiting {wait_interval}s...")
                 time.sleep(wait_interval)
-        
+
         log.error("MPD timeout after 60 seconds")
         return False
 
@@ -100,7 +90,6 @@ class MPDClient:
             if self.connect():
                 status = self._client.status()
                 playlist = self._client.playlistinfo()
-                log.debug(f"Playlist info retrieved: {len(playlist)} tracks")
                 return {
                     'total_tracks': int(status.get('playlistlength', 0)),
                     'tracks': playlist

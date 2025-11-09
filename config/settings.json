@@ -12,7 +12,7 @@
     "status_leds": {
       "pin": 21,
       "count": 4,
-      "brightness": 16,
+      "brightness": 4,
       "order": "GRB"
     }
   },
@@ -24,7 +24,7 @@
     "volume_display_duration": 3
   },
   "display": {
-    "brightness": 8,
+    "brightness": 3,
     "brightness_levels": {
       "led": [
         4,
@@ -59,9 +59,11 @@
       "on_track_change": {
         "effect": "flash_active",
         "repeat_count": 2,
-        "on_duration": 0.20,
-        "off_duration": 0.10,
-        "r": 0, "g": 255, "b": 0
+        "on_duration": 0.2,
+        "off_duration": 0.1,
+        "r": 0,
+        "g": 255,
+        "b": 0
       }
     }
   },

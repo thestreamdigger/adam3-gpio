@@ -1,4 +1,6 @@
 from rpi_ws281x import PixelStrip, Color
+import threading
+import time
 from typing import Dict, Any
 from src.core.config import Config
 from src.utils.logger import Logger
@@ -36,8 +38,8 @@ class LEDController:
         
         self.brightness = max(0, min(255, int(status_leds_config.get('brightness', 32))))
         self._last_status = {}
-        self._is_animating = False
-        
+        self._animation_lock = threading.Lock()
+
         self.all_off()
         log.ok("Status LEDs initialized")
 
@@ -47,19 +49,19 @@ class LEDController:
             configured_brightness = int(self.config.get('gpio.status_leds.brightness', self.brightness))
             self.brightness = max(0, min(255, configured_brightness))
             log.debug(f"Status LEDs brightness set to {self.brightness}/255")
-            
+
             if old_brightness != self.brightness:
-                self._force_led_update()
-            
+                self._update_leds(self._last_status)
+
         except Exception as e:
             log.error(f"Status LEDs setup failed: {e}")
             self.brightness = 32
 
-    def _force_led_update(self) -> None:
+    def _update_leds(self, state_map: Dict[str, bool]) -> None:
         try:
-            for led_name, state in self._last_status.items():
+            for led_name, is_on in state_map.items():
                 led_index = self.led_map[led_name]
-                color = Color(0, 0, self.brightness) if state else Color(0, 0, 0)
+                color = Color(0, 0, self.brightness) if is_on else Color(0, 0, 0)
                 self.strip.setPixelColor(led_index, color)
             self.strip.show()
         except Exception as e:
@@ -68,7 +70,7 @@ class LEDController:
     def update_from_mpd_status(self, status: Dict[str, Any]) -> None:
         if not status:
             return
-            
+
         try:
             state_map = {
                 'repeat': status.get('repeat', '0') == '1',
@@ -76,16 +78,10 @@ class LEDController:
                 'single': status.get('single', '0') == '1',
                 'consume': status.get('consume', '0') == '1'
             }
-            
+
             if state_map != self._last_status:
                 self._last_status = state_map
-                
-                for led_name, is_on in state_map.items():
-                    led_index = self.led_map[led_name]
-                    color = Color(0, 0, self.brightness) if is_on else Color(0, 0, 0)
-                    self.strip.setPixelColor(led_index, color)
-                
-                self.strip.show()
+                self._update_leds(state_map)
         except Exception as e:
             log.error(f"MPD status update failed: {e}")
 
@@ -101,24 +97,20 @@ class LEDController:
     def cleanup(self) -> None:
         try:
             self.all_off()
-            self.strip.reset()
             self.strip = None
         except Exception as e:
             log.error(f"LED cleanup failed: {e}")
   
     def _run_one_shot(self, effect_fn) -> None:
-        if self._is_animating:
+        if not self._animation_lock.acquire(blocking=False):
             return
-        
-        self._is_animating = True
-        import threading
 
         def _worker() -> None:
             try:
                 effect_fn()
             finally:
-                self._force_led_update()
-                self._is_animating = False
+                self._update_leds(self._last_status)
+                self._animation_lock.release()
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -130,8 +122,6 @@ class LEDController:
         return Color(sr, sg, sb)
 
     def flash_all(self, r: int, g: int, b: int, times: int = 1, on_ms: int = 150, off_ms: int = 120) -> None:
-        import time
-
         def run() -> None:
             for _ in range(max(1, times)):
                 for i in range(self.strip.numPixels()):
@@ -147,8 +137,6 @@ class LEDController:
         self._run_one_shot(run)
 
     def flash_active(self, r: int, g: int, b: int, times: int = 1, on_ms: int = 150, off_ms: int = 120) -> None:
-        import time
-
         def run() -> None:
             active_indices = [self.led_map[name] for name, is_on in self._last_status.items() if is_on]
             base_on_color = Color(0, 0, self.brightness)

@@ -13,14 +13,19 @@ ADAM3-GPIO blends hardware and software to recreate an early CD player-style int
 Version 3.0 uses the TM1652 display with UART communication and WS2812D status LEDs for improved performance and simplified wiring.
 
 ## What Has Been Achieved
-Adam has grown from the ground up along with my coding knowledge, with valuable assistance from Claude AI for code reviews and optimization. This tool helped surpass the initial goal of a single script driving the display hardware. The various toggle scripts now manage key playback modes (random, repeat, single, consume) by lighting up the appropriate status LEDs in blue, while the display can easily switch between showing elapsed or remaining time (on the fly), total runtime, or even the number of tracks in the current playlist/album.
+Adam has grown from the ground up along with my coding knowledge, with valuable assistance from Claude AI for code reviews and optimization. This partnership helped surpass the initial goal of a single script driving the display hardware. The various toggle scripts now manage key playback modes (random, repeat, single, consume) by lighting up the appropriate status LEDs in blue, while the display can easily switch between showing elapsed or remaining time (on the fly), total runtime, or even the number of tracks in the current playlist/album.
 
 Delivering these features required fine-tuning real-time GPIO interactions and code structure—a process that offered me invaluable learning experiences. In essence, Adam now provides the streamlined, no-distractions user experience I originally envisioned.
 
-## Future Development
-The hardware side of the project now relies on simple elements. The WS2812D status LEDs open possibilities for enhanced visual feedback, including different colors for various states, fade effects, or motion patterns. The single-pin requirement also frees up GPIO pins for additional hardware expansions.
+## Hardware Constraints and Alternatives
+The migration to WS2812D status LEDs has eliminated previous GPIO limitations. With only a single data pin required for four LEDs, there are no longer conflicts with I2S audio output, and PWM oscillation issues are completely resolved. The digital control provides precise brightness levels and stable operation.
 
-Recently, I've been leaning toward USB-UART connectivity for more universal integration. Nearly all SBC music streamers support USB for both control and data, offering a simpler foundation to build upon while freeing up the Pi's GPIO for more custom hardware expansions.
+While exploring other options, I came across Python-compatible microcontrollers—especially the Raspberry Pi Pico (RP2040)—which are both affordable and flexible for handling multiple LEDs. The WS2812D approach maintains this flexibility while keeping the system simple and focused.
+
+## Future Development
+The hardware side of the project now relies on even simpler elements. The WS2812D status LEDs open possibilities for enhanced visual feedback, including different colors for various states, fade effects, or breathing patterns. The single-pin requirement also frees up GPIO pins for additional hardware expansions.
+
+Recently, I've been leaning toward UART connectivity for more universal integration. Nearly all SBC music streamers support USB for both control and data, offering a simpler foundation to build upon while freeing up the Pi's GPIO for more custom hardware expansions.
 
 For now, development here will likely focus on bug fixes or new ideas I pick up when I have time to refactor, while firmly keeping the current Adam hardware design for stability and simplicity. Adam is a champion and will keep its rightful place, hopefully inspiring you to embark on your own projects.
 
